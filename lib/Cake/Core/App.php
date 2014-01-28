@@ -377,7 +377,11 @@ class App {
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/app.html#App::themePath
  */
 	public static function themePath($theme) {
-		$themeDir = 'Themed' . DS . Inflector::camelize($theme);
+		$themeDir = Configure::read('View.themeDir') . DS . Inflector::camelize($theme);
+		$themePath = Configure::read('View.themePath');
+		if($themePath) {
+			return $themePath . $themeDir . DS;
+		}
 		foreach (self::$_packages['View'] as $path) {
 			if (is_dir($path . $themeDir)) {
 				return $path . $themeDir . DS;
