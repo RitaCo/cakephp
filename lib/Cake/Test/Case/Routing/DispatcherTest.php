@@ -531,6 +531,15 @@ class TestFilterDispatcher extends DispatcherFilter {
 }
 
 /**
+ * TestRouter class
+ *
+ * @package       Cake.Test.Case.Routing
+ */
+class TestRouter extends Router {
+
+}
+
+/**
  * DispatcherTest class
  *
  * @package       Cake.Test.Case.Routing
@@ -602,6 +611,25 @@ class DispatcherTest extends CakeTestCase {
 		$this->assertFalse(!empty($request['form']));
 	}
 
+/**
+ * testParseParamsWithoutZerosAndEmptyPost method
+ *
+ * @return void
+ */
+	public function testChangeDefaultRouterClass() {
+		$Dispatcher = new Dispatcher();
+	 	$Dispatcher::$defaultRouterClass = 'TestRouter';
+		$request = new CakeRequest("/testcontroller/testaction/params1/params2/params3");
+		$event = new CakeEvent('DispatcherTest', $Dispatcher, array('request' => $request));
+		$Dispatcher->parseParams($event);
+		$this->assertSame($request['controller'], 'testcontroller');
+		$this->assertSame($request['action'], 'testaction');
+		$this->assertSame($request['pass'][0], 'params1');
+		$this->assertSame($request['pass'][1], 'params2');
+		$this->assertSame($request['pass'][2], 'params3');
+		$this->assertFalse(!empty($request['form']));
+	}
+	
 /**
  * testParseParamsReturnsPostedData method
  *
