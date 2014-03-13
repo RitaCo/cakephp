@@ -88,7 +88,8 @@ class Configure {
 				'level' => E_ALL & ~E_DEPRECATED,
 			);
 			self::_setErrorHandlers($error, $exception);
-
+			// rita
+			Rita::bootStrapStart();
 			if (!include APP . 'Config' . DS . 'bootstrap.php') {
 				trigger_error(__d('cake_dev',
 						"Can't find application bootstrap file. Please create %s, and make sure it is readable by PHP.",
@@ -96,6 +97,8 @@ class Configure {
 					E_USER_ERROR
 				);
 			}
+			// rita
+			Rita::bootStrapEnd();
 			restore_error_handler();
 
 			self::_setErrorHandlers(
