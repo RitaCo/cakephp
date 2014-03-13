@@ -212,8 +212,10 @@ class Dispatcher implements CakeEventListener {
  */
 	public function parseParams($event) {
 		$request = $event->data['request'];
-		Router::setRequestInfo($request);
-		$params = Router::parse($request->url);
+		
+		$routerClass = self::_defaultRouterClass();
+		call_user_func( array($routerClass,'setRequestInfo'),$request);
+		$params = call_user_func(array($routerClass,'parse'),$request->url);
 		$request->addParams($params);
 
 		if (!empty($event->data['additionalParams'])) {
@@ -267,4 +269,18 @@ class Dispatcher implements CakeEventListener {
 		return false;
 	}
 
+/**
+ * Dispatcher::_getRouterClass()
+ * 
+ * @return void
+ */
+	public static function _defaultRouterClass() {
+		$routerClass = Configure::read('Dispatcher.routerClass');
+		if (!$routerClass){
+			$routerClass = 'Router';
+		}
+		
+		return $routerClass;
+	}
+	
 }
