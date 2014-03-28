@@ -138,7 +138,7 @@ if (!defined('JS_URL')) {
 require CAKE . 'basics.php';
 require CAKE . 'Core' . DS . 'App.php';
 require CAKE . 'Error' . DS . 'exceptions.php';
-
+require APP. 'Vendor' . DS . 'Rita' .DS . 'Rita.php';
 spl_autoload_register(array('App', 'load'));
 
 App::uses('ErrorHandler', 'Error');
