@@ -375,7 +375,7 @@ class Router {
 			unset($options['parent']);
 			list($route, $defaults, $options, $parentAlias) = self::extendAliasRoute($parentAlias,$route, $defaults, $options);
 		}		
-		
+
 		foreach (self::$_prefixes as $prefix) {
 			if (isset($defaults[$prefix])) {
 				if ($defaults[$prefix]) {
@@ -875,10 +875,6 @@ class Router {
 		}
 		$alias = $extension = $output = $q = $frag = null;
 		
-		
-		
-		
-		
 		$params = array('plugin' => null, 'controller' => null, 'action' => 'index');
 
 		if (is_bool($full)) {
@@ -908,17 +904,18 @@ class Router {
 			return $output;
 		}
 		if (is_string($url)) {
-			
+		   $saleh = $url;
 		
 			if (preg_match('/^([a-z][a-z0-9.+\-]+:|:?\/\/|[#?])/i', $url)) {
 				return $url;
 			}
 			
 			if (substr($url, 0, 1) === '/') {
-								$output = substr($url, 1);
+				$output = substr($url, 1);
 			}else{
+				
 			 	list($alias, $defAlias) = self::extractAlias($url);
-			 	
+
 			 	if (empty(self::$aliases[$alias])) {
 					foreach (self::$_prefixes as $prefix) {
 						if (isset($params[$prefix])) {
@@ -939,8 +936,14 @@ class Router {
 						$params = self::$routes[$route]->persistParams(self::$routes[$route]->defaults,$params);
 						$output = self::$routes[$route]->match($params);	
 			 	}else {
-			 		$routeKeys = self::$aliases[$alias]['childs'];
-			 		$url = $defAlias;
+			 		 	$route =self::$aliases[$alias]['route'];
+					
+			 		$routeKeys = (self::$aliases[$alias]['childs']);
+			 		$orginal =$url;
+			 		$url = $defAlias+self::$routes[$route]->defaults;
+			 		//$url = $defAlias;
+					 ///+$url;
+			 		//l( array($url,$defAlias,$params),$orginal);
 			 	}
 					
 			}
@@ -996,10 +999,11 @@ class Router {
 			}
 			foreach($routeKeys as $i) {
 				$originalUrl = $url;
-
+				l(array(self::$routes[$i],$url,$alias),$saleh);
 				$url = self::$routes[$i]->persistParams($url, $params);
-
+				l(array(self::$routes[$i],$url,$alias),$saleh);
 				if ($match = self::$routes[$i]->match($url)) {
+					l('aaaaaaaaa');
 					$output = trim($match, '/');
 					break;
 				}
@@ -1360,12 +1364,13 @@ class Router {
 		}		
 
 		$parentRoute  =  self::$routes[self::aliasRouteKey($alias)];
-		$options = array_merge($options,$parentRoute->options);
-		$defaults = array_merge($parentRoute->defaults, $aliasDefaults, $defaults);
+		$options = $options+$parentRoute->options;
+//		$defaults = array_merge($parentRoute->defaults, $aliasDefaults, $defaults);
+		$defaults = $defaults+ $aliasDefaults+ $parentRoute->defaults;
 	 	
 	 	$route = $parentRoute->template.'/'.$route;	 	
 	 	$route = self::normalize($route);
-	 	
+	 	//l(array($route, $defaults, $options , $alias,$parentRoute),$alias);
 		return array($route, $defaults, $options , $alias);	
 	}
 
@@ -1404,6 +1409,9 @@ class Router {
 			} else {
 				$defaults[] = $part[0];
 			}
+		}
+		if (empty($defaults['action'])) {
+			$defaults['action'] = 'index';
 		}
 		return array($alias, $defaults);
 	}
