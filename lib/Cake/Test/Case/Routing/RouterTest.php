@@ -49,7 +49,7 @@ class RouterTest extends CakeTestCase {
 		parent::tearDown();
 		CakePlugin::unload();
 		Router::fullBaseUrl('');
-		Configure::write('App.fullBaseUrl', 'http://localhost');
+		Configure::write('App.fullBaseUrl', 'http://'.env('HTTP_HOST'));
 	}
 
 /**
@@ -2838,4 +2838,118 @@ class RouterTest extends CakeTestCase {
 		$expected = '?foo=bar&php=nut&jose=zap';
 		$this->assertEquals($expected, $result);
 	}
+	
+	
+/**
+ * Tests aliased route
+ *
+ * @return void
+ */	
+	public function testAliasedRoutes() {
+		Configure::write('Routing.prefixes', array('admin'));
+	
+			Router::reload();
+		
+			Router::defaultRouteClass();
+		require CAKE . 'Config' . DS . 'routes.php';
+		
+	Router::connect(
+		'/', 
+		array('controller' => 'doshboards', 'action' => 'welcome'),
+		array('alias' => 'home')
+	);
+		
+
+	Router::connect(
+		'/admin', 
+		array('prefix' => 'admin', 'admin' => true ,'controller' => 'doshboards', 'action' => 'welcome'),
+		array(
+			'alias' => 'admin',
+			'parent' => 'home'
+		)
+	);
+	
+	Router::connect(
+		'/usermanager', 
+		array( 'plugin' => 'usermanager','controller' => 'usermanagers', 'action' => 'index'),
+		array( 
+			'alias' => 'UserManager',
+			'parent' => 'admin'
+		)
+	);
+	
+	Router::connect(
+		'/:controller', 
+		array( ),
+		array(
+			'parent' => 'UserManager'
+		)
+	);	
+
+	Router::connect(
+		'/:controller/:action/*', 
+		array( ),
+		array(
+			
+			'parent' => 'UserManager'
+		)
+	);
+	
+		
+	Router::connect(
+		'/members', 
+		array( 'controller' => 'members' ),
+		array( 
+			'alias' => 'UserManager.Member',
+			'parent' => 'UserManager'
+		)
+	);
+
+	Router::connect(
+		'/:action/*', 
+		array( ),
+		array(
+			'parent' => 'UserManager.Member'
+		)
+	);	
+		
+		$url = '/';
+		$this->assertEquals($url, Router::url('home'));
+		
+		$url = '/admin';
+		$this->assertEquals($url, Router::url('admin'));
+		
+		$url = '/admin/usermanager';
+		$this->assertEquals($url, Router::url('UserManager'));
+		
+		$url = '/admin/usermanager/usermanagers/edit';
+		$this->assertEquals($url, Router::url('UserManager@a:edit'));
+		
+		$url = '/admin/usermanager/tests';
+		$this->assertEquals($url, Router::url('UserManager@c:tests'));
+		
+		$url = '/admin/usermanager/members';
+		$this->assertEquals($url, Router::url('UserManager.Member'));
+		
+		$url = '/admin/usermanager/members/edit';
+		$this->assertEquals($url, Router::url('UserManager.Member@a:edit'));
+		
+		$url = '/admin/usermanager/members/edit';
+		$this->assertEquals($url, Router::url('UserManager.Member@>:edit'));
+		
+		$url = '/admin/usermanager/members/edit';
+		$this->assertEquals($url, Router::url('UserManager.Member@action:edit'));
+		
+		$url = '/admin/usermanager/members/edit/1';
+		$this->assertEquals($url, Router::url('UserManager.Member@a:edit/1'));
+		
+		$url = '/admin/usermanager/members/edit/1';
+		$this->assertEquals($url, Router::url('UserManager.Member@>:edit/1'));
+		
+		$url = '/admin/usermanager/members/edit/1';
+		$this->assertEquals($url, Router::url('UserManager.Member@action:edit/1'));
+
+
+	}	
+
 }

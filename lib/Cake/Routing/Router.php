@@ -204,14 +204,15 @@ class Router {
  */
 	protected static $_routeClass = 'CakeRoute';
 
-
 /**
- * 
+ * Default route tokens
+ *
+ * @var array
  */
 	public static $aliasTokens = array(
-		'plugin'		=> array('>>>', 'p'),
-		'controller'	=> array('>>', 'c'),
-		'action'		=> array('>', 'a')
+		'plugin' => array('>>>', 'p'),
+		'controller' => array('>>', 'c'),
+		'action' => array('>', 'a'),
 	);
 
 /**
@@ -219,7 +220,7 @@ class Router {
  *
  * @var array
  */
-	public static $aliases = array();  
+	public static $aliases = array();
 
 /**
  * Set the default route class to use or return the current one
@@ -361,20 +362,18 @@ class Router {
  */
 	public static function connect($route, $defaults = array(), $options = array()) {
 		self::$initialized = true;
-
 		$alias = $parentAlias = false;
-		 
 		// change me
 		if (!empty($options['alias'])) {
 			$alias = $options['alias'];
-			unset($options['alias']); 
+			unset($options['alias']);
 		}
 		// change me
 		if (!empty($options['parent'])) {
 			$parentAlias = $options['parent'];
 			unset($options['parent']);
-			list($route, $defaults, $options, $parentAlias) = self::extendAliasRoute($parentAlias,$route, $defaults, $options);
-		}		
+			list($route, $defaults, $options, $parentAlias) = self::extendAliasRoute($parentAlias, $route, $defaults, $options);
+		}
 
 		foreach (self::$_prefixes as $prefix) {
 			if (isset($defaults[$prefix])) {
@@ -407,16 +406,18 @@ class Router {
 		if ($routeClass === 'RedirectRoute' && isset($defaults['redirect'])) {
 			$defaults = $defaults['redirect'];
 		}
+
 		self::$routes[] = new $routeClass($route, $defaults, $options);
-		
+
 		end(self::$routes);
 		$routeKey = key(self::$routes);
 		if ($alias) {
 			self::$aliases[$alias]['route'] = $routeKey;
 		}
-		if($parentAlias) {
+		if ($parentAlias && empty($alias)) {
 			self::$aliases[$parentAlias]['childs'][] = $routeKey;
 		}
+
 		return self::$routes;
 	}
 
@@ -873,8 +874,19 @@ class Router {
 		if (!self::$initialized) {
 			self::_loadRoutes();
 		}
-		$alias = $extension = $output = $q = $frag = null;
-		
+
+		if (is_string($url)) {
+			$originalUrl = $url;
+			$output = self::urlAlias($url);
+			if ($output) {
+				if ($full) {
+					$output = self::fullBaseUrl() . $output;
+				}
+				return $output;
+			}
+			$url = $originalUrl;
+		}
+
 		$params = array('plugin' => null, 'controller' => null, 'action' => 'index');
 
 		if (is_bool($full)) {
@@ -894,7 +906,7 @@ class Router {
 		}
 
 		$base = $path['base'];
-
+		$extension = $output = $q = $frag = null;
 
 		if (empty($url)) {
 			$output = isset($path['here']) ? $path['here'] : '/';
@@ -902,55 +914,7 @@ class Router {
 				$output = self::fullBaseUrl() . $output;
 			}
 			return $output;
-		}
-		if (is_string($url)) {
-		   $saleh = $url;
-		
-			if (preg_match('/^([a-z][a-z0-9.+\-]+:|:?\/\/|[#?])/i', $url)) {
-				return $url;
-			}
-			
-			if (substr($url, 0, 1) === '/') {
-				$output = substr($url, 1);
-			}else{
-				
-			 	list($alias, $defAlias) = self::extractAlias($url);
-
-			 	if (empty(self::$aliases[$alias])) {
-					foreach (self::$_prefixes as $prefix) {
-						if (isset($params[$prefix])) {
-							$output .= $prefix . '/';
-							break;
-						}
-					}
-					if (!empty($params['plugin']) && $params['plugin'] !== $params['controller']) {
-						$output .= Inflector::underscore($params['plugin']) . '/';
-					}
-					$output .= Inflector::underscore($params['controller']) . '/' . $url;			 		
-			 	} elseif(empty($defAlias)) {
- 	 					$route =self::$aliases[$alias]['route'];
-						if (!empty(self::$_requests)) {
-							$request = self::$_requests[count(self::$_requests) - 1];
-							$params = $request->params;
-						}
-						$params = self::$routes[$route]->persistParams(self::$routes[$route]->defaults,$params);
-						$output = self::$routes[$route]->match($params);	
-			 	}else {
-			 		 	$route =self::$aliases[$alias]['route'];
-					
-			 		$routeKeys = (self::$aliases[$alias]['childs']);
-			 		$orginal =$url;
-			 		$url = $defAlias+self::$routes[$route]->defaults;
-			 		//$url = $defAlias;
-					 ///+$url;
-			 		//l( array($url,$defAlias,$params),$orginal);
-			 	}
-					
-			}
-			
-		}
-		
-		if (is_array($url)) {
+		} elseif (is_array($url)) {
 			if (isset($url['base']) && $url['base'] === false) {
 				$base = null;
 				unset($url['base']);
@@ -994,16 +958,13 @@ class Router {
 			$url += array('controller' => $params['controller'], 'plugin' => $params['plugin']);
 
 			$match = false;
-			if(!$alias) {
-				$routeKeys = array_keys(self::$routes); 
-			}
-			foreach($routeKeys as $i) {
+
+			for ($i = 0, $len = count(self::$routes); $i < $len; $i++) {
 				$originalUrl = $url;
-				l(array(self::$routes[$i],$url,$alias),$saleh);
+
 				$url = self::$routes[$i]->persistParams($url, $params);
-				l(array(self::$routes[$i],$url,$alias),$saleh);
+
 				if ($match = self::$routes[$i]->match($url)) {
-					l('aaaaaaaaa');
 					$output = trim($match, '/');
 					break;
 				}
@@ -1012,7 +973,25 @@ class Router {
 			if ($match === false) {
 				$output = self::_handleNoRoute($url);
 			}
-		} 
+		} else {
+			if (preg_match('/^([a-z][a-z0-9.+\-]+:|:?\/\/|[#?])/i', $url)) {
+				return $url;
+			}
+			if (substr($url, 0, 1) === '/') {
+				$output = substr($url, 1);
+			} else {
+				foreach (self::$_prefixes as $prefix) {
+					if (isset($params[$prefix])) {
+						$output .= $prefix . '/';
+						break;
+					}
+				}
+				if (!empty($params['plugin']) && $params['plugin'] !== $params['controller']) {
+					$output .= Inflector::underscore($params['plugin']) . '/';
+				}
+				$output .= Inflector::underscore($params['controller']) . '/' . $url;
+			}
+		}
 		$protocol = preg_match('#^[a-z][a-z0-9+\-.]*\://#i', $output);
 		if ($protocol === 0) {
 			$output = str_replace('//', '/', $base . '/' . $output);
@@ -1025,6 +1004,39 @@ class Router {
 			}
 		}
 		return $output . $extension . self::queryString($q, array(), $escape) . $frag;
+	}
+
+/**
+ * Finds URL for aliased specified action
+ * 
+ * @param mixed $url
+ * @param bool $full
+ * @return
+ */
+	public static function urlAlias($url = null) {
+		if ( preg_match('/^([a-z][a-z0-9.+\-]+:|:?\/\/|[#?\/])/i', $url)) {
+			return false;
+		}
+		list($alias, $defaultsParams) = Router::extractAlias($url);
+		if (!isset(self::$aliases[$alias])) {
+			return false;
+		}
+		$routekey = self::$aliases[$alias]['route'];
+		$url = Router::$routes[$routekey]->defaults;
+		if (empty($defaultsParams)) {
+			return Router::$routes[$routekey]->match($url);
+		}
+		$childsRouteKeys = self::$aliases[$alias]['childs'];
+		array_unshift($childsRouteKeys, $routekey);
+		$url = $defaultsParams + $url;
+
+		$match = false;
+		foreach ($childsRouteKeys as $i) {
+			if ($match = self::$routes[$i]->match($url)) {
+				$match = rtrim($match, '/');
+				return $match;
+			}
+		}
 	}
 
 /**
@@ -1346,7 +1358,6 @@ class Router {
 		include APP . 'Config' . DS . 'routes.php';
 	}
 
-
 /**
  * Router::extendRoute()
  * 
@@ -1356,24 +1367,19 @@ class Router {
  * @param mixed $options
  * @return
  */
-	protected static function extendAliasRoute($alias, $route, $defaults, $options) {
+	public static function extendAliasRoute($alias, $route, $defaults, $options) {
 		list($alias, $aliasDefaults) = self::extractAlias($alias);
 		if (empty(self::$aliases[$alias])) {
-			trigger_error( __d('cake_dev',' alias "%s" is not defined',$alias['name']), E_USER_WARNING);
-			return array($route, $defaults, $options,false);
-		}		
-
-		$parentRoute  =  self::$routes[self::aliasRouteKey($alias)];
-		$options = $options+$parentRoute->options;
-//		$defaults = array_merge($parentRoute->defaults, $aliasDefaults, $defaults);
-		$defaults = $defaults+ $aliasDefaults+ $parentRoute->defaults;
-	 	
-	 	$route = $parentRoute->template.'/'.$route;	 	
-	 	$route = self::normalize($route);
-	 	//l(array($route, $defaults, $options , $alias,$parentRoute),$alias);
-		return array($route, $defaults, $options , $alias);	
+			trigger_error( __d('cake_dev', ' alias "%s" is not defined', $alias['name']), E_USER_WARNING);
+			return array($route, $defaults, $options, false);
+		}
+		$parentRoute = self::$routes[self::aliasRouteKey($alias)];
+		$options = Hash::merge($parentRoute->options, $options);
+		$defaults = Hash::merge( $parentRoute->defaults, $defaults);
+		$route = $parentRoute->template . $route;
+		$route = '/' . ltrim($route, '/');
+		return array($route, $defaults, $options, $alias);
 	}
-
 
 /**
  * Router::extractAlias()
@@ -1381,28 +1387,27 @@ class Router {
  * @param mixed $name
  * @return
  */
-	protected static function extractAlias($name) {
-		
-		$name = explode('@',$name);
+	public static function extractAlias($name) {
+		$name = explode('@', $name);
 		$alias = $name[0];
-		
-		if (empty($name[1])){
+
+		if (empty($name[1])) {
 			return array($alias, array());
 		}
 
 		$options = explode('/', $name[1]);
 		$defaults = array();
-		
+
 		foreach ($options as $part) {
-			$part= explode(':',$part);
-			
+			$part = explode(':', $part);
+
 			if (count($part) > 2) {
 				continue;
-			} 
-			
+			}
+
 			if (count($part) === 2) {
 				$type = self::tokenType($part[0]);
-				if(!$type) {
+				if (!$type) {
 					$type = $part[0];
 				}
 				$defaults[$type] = $part[1];
@@ -1410,8 +1415,10 @@ class Router {
 				$defaults[] = $part[0];
 			}
 		}
-		if (empty($defaults['action'])) {
-			$defaults['action'] = 'index';
+		if (!empty($defaults['controller'])) {
+			if (!isset($defaults['action'])) {
+				$defaults['action'] = 'index';
+			}
 		}
 		return array($alias, $defaults);
 	}
@@ -1427,8 +1434,7 @@ class Router {
 			return false;
 		}
 		return self::$aliases[$alias]['route'];
-
-	}	
+	}
 
 /**
  * Router::tokenType()
@@ -1436,16 +1442,15 @@ class Router {
  * @param mixed $token
  * @return
  */
-	protected static function tokenType($token) {
+	public static function tokenType($token) {
 		foreach (self::$aliasTokens as $type => $tokens) {
 			if (in_array($token, $tokens)) {
 				return $type;
-			}		
+			}
 		}
-	
 		return false;
-	}	
-	
+	}
+
 }
 
 //Save the initial state
