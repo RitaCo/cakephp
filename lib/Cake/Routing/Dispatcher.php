@@ -212,8 +212,8 @@ class Dispatcher implements CakeEventListener {
  */
 	public function parseParams($event) {
 		$request = $event->data['request'];
-		Router::setRequestInfo($request);
-		$params = Router::parse($request->url);
+		RitaRouter::setRequestInfo($request);
+		$params = RitaRouter::parse($request->url);
 		$request->addParams($params);
 
 		if (!empty($event->data['additionalParams'])) {
