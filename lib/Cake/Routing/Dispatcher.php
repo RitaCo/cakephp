@@ -162,7 +162,7 @@ class Dispatcher implements CakeEventListener {
 			));
 		}
 
-		$response = $this->_invoke($controller, $request);
+		$response = $this->_invoke($controller, $request, $response);
 		if (isset($request->params['return'])) {
 			return $response->body();
 		}
@@ -174,19 +174,18 @@ class Dispatcher implements CakeEventListener {
 
 /**
  * Initializes the components and models a controller will be using.
- * Triggers the controller action, and invokes the rendering if Controller::$autoRender
- * is true and echo's the output. Otherwise the return value of the controller
- * action are returned.
+ * Triggers the controller action, and invokes the rendering if Controller::$autoRender is true and echo's the output.
+ * Otherwise the return value of the controller action are returned.
  *
  * @param Controller $controller Controller to invoke
  * @param CakeRequest $request The request object to invoke the controller for.
+ * @param CakeResponse $response The response object to receive the output
  * @return CakeResponse the resulting response object
  */
-	protected function _invoke(Controller $controller, CakeRequest $request) {
+	protected function _invoke(Controller $controller, CakeRequest $request, CakeResponse $response) {
 		$controller->constructClasses();
 		$controller->startupProcess();
 
-		$response = $controller->response;
 		$render = true;
 		$result = $controller->invokeAction($request);
 		if ($result instanceof CakeResponse) {
@@ -213,10 +212,8 @@ class Dispatcher implements CakeEventListener {
  */
 	public function parseParams($event) {
 		$request = $event->data['request'];
-		
-		$routerClass = self::_defaultRouterClass();
-		call_user_func( array($routerClass,'setRequestInfo'),$request);
-		$params = call_user_func(array($routerClass,'parse'),$request->url);
+		Router::setRequestInfo($request);
+		$params = Router::parse($request->url);
 		$request->addParams($params);
 
 		if (!empty($event->data['additionalParams'])) {
@@ -270,18 +267,4 @@ class Dispatcher implements CakeEventListener {
 		return false;
 	}
 
-/**
- * Dispatcher::_getRouterClass()
- * 
- * @return void
- */
-	public static function _defaultRouterClass() {
-		$routerClass = Configure::read('Dispatcher.routerClass');
-		if (!$routerClass){
-			$routerClass = 'Router';
-		}
-		
-		return $routerClass;
-	}
-	
 }
