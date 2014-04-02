@@ -1275,4 +1275,4 @@ class Router {
 }
 
 //Save the initial state
-Router::reload();
+//RitaRouter::reload();
