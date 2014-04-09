@@ -1135,7 +1135,7 @@ class CakeEmail {
 				if (!is_array($this->_config['log'])) {
 					$this->_config['log'] = array('level' => $this->_config['log']);
 				}
-				$config = array_merge($config, $this->_config['log']);
+				$config = $this->_config['log'] + $config;
 			}
 			CakeLog::write(
 				$config['level'],
@@ -1199,7 +1199,7 @@ class CakeEmail {
 			}
 			$config = $configs->{$config};
 		}
-		$this->_config = array_merge($this->_config, $config);
+		$this->_config = $config + $this->_config;
 		if (!empty($config['charset'])) {
 			$this->charset = $config['charset'];
 		}
@@ -1645,21 +1645,21 @@ class CakeEmail {
 			$View->plugin = $layoutPlugin;
 		}
 
-		// Convert null to false, as View needs false to disable
-		// the layout.
-		if ($layout === null) {
-			$layout = false;
-		}
-
 		if ($View->get('content') === null) {
 			$View->set('content', $content);
+		}
+
+		// Convert null to false, as View needs false to disable
+		// the layout.
+		if ($this->_layout === null) {
+			$this->_layout = false;
 		}
 
 		foreach ($types as $type) {
 			$View->hasRendered = false;
 			$View->viewPath = $View->layoutPath = 'Emails' . DS . $type;
 
-			$render = $View->render($template, $layout);
+			$render = $View->render($this->_template, $this->_layout);
 			$render = str_replace(array("\r\n", "\r"), "\n", $render);
 			$rendered[$type] = $this->_encodeString($render, $this->charset);
 		}

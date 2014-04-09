@@ -1,7 +1,5 @@
 <?php
 /**
- *
- *
  * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
@@ -39,7 +37,7 @@ class AssetDispatcher extends DispatcherFilter {
  *
  * @param CakeEvent $event containing the request and response object
  * @return mixed The resulting response.
- * @throws NotFoundException When asset not found and value of react is true
+ * @throws NotFoundException When asset not found
  */
 	public function beforeDispatch(CakeEvent $event) {
 		$url = urldecode($event->data['request']->url);
@@ -59,6 +57,12 @@ class AssetDispatcher extends DispatcherFilter {
 
 		$response = $event->data['response'];
 		$event->stopPropagation();
+
+		if (!file_exists($assetFile)) {
+			$response->statusCode(404);
+			$response->send();
+			return $response;
+		}
 
 		if (!file_exists($assetFile)) {
 			$response->statusCode(404);
