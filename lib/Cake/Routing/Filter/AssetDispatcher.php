@@ -51,24 +51,11 @@ class AssetDispatcher extends DispatcherFilter {
 		}
 
 		$assetFile = $this->_getAssetFile($url);
-		if ($assetFile === null) {
+		if ($assetFile === null || !file_exists($assetFile)) {
 			return null;
 		}
-
 		$response = $event->data['response'];
 		$event->stopPropagation();
-
-		if (!file_exists($assetFile)) {
-			$response->statusCode(404);
-			$response->send();
-			return $response;
-		}
-
-		if (!file_exists($assetFile)) {
-			$response->statusCode(404);
-			$response->send();
-			return $response;
-		}
 
 		$response->modified(filemtime($assetFile));
 		if ($response->checkNotModified($event->data['request'])) {
@@ -77,6 +64,7 @@ class AssetDispatcher extends DispatcherFilter {
 
 		$pathSegments = explode('.', $url);
 		$ext = array_pop($pathSegments);
+
 		$this->_deliverAsset($response, $assetFile, $ext);
 		return $response;
 	}
@@ -139,17 +127,6 @@ class AssetDispatcher extends DispatcherFilter {
 			$fileFragment = implode(DS, $parts);
 			$pluginWebroot = CakePlugin::path($plugin) . 'webroot' . DS;
 			return $pluginWebroot . $fileFragment;
-		}
-
-		$webroot = APP . 'webroot' . DS;
-		$fileFragment = implode(DS, $parts);
-		if (file_exists($webroot . $parts[0])) {
-			return $webroot . $fileFragment;
-		}
-
-		$router = Router::parse($url);
-		if (strpos($router['controller'], '.') !== false || strpos($router['action'], '.') !== false) {
-			return 'webroot' . DS . $fileFragment;
 		}
 	}
 
