@@ -239,30 +239,21 @@ class CakeEventManager {
 			if ($event->isStopped()) {
 				break;
 			}
-			if($event->passParams) {
+			
+			$canPassParams = !(gettype($listener['callable']) !== 'object' && $listener['callable'][0] instanceof ObjectCollection);
+			if($event->passParams && $canPassParams) {
 				
-				$type = gettype($listener['callable']);
-				
-				if ( $type !== 'object'  and $listener['callable'][0] instanceof ObjectCollection ) {
-				
-					$result = call_user_func($listener['callable'], $event);
-				} else {
-				
-				
-
 					$params = $event->data;
 					if($listener['global'] === true){
 						 $params[] = $event->subject();
 					}
 					$result = call_user_func_array($listener['callable'], $params);
-				}
+			
 				
 			} else {
-				if ($listener['passParams'] === true) {
-					$result = call_user_func_array($listener['callable'], $event->data);
-				} else {
+			
 				$result = call_user_func($listener['callable'], $event);
-				}
+				
 			}
 			if ($result === false) {
 				$event->stopPropagation();
