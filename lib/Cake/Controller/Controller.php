@@ -619,7 +619,7 @@ class Controller extends Object implements CakeEventListener {
 		return array(
 			'Controller.initialize' => 'beforeFilter',
 			'Controller.beforeRender' => 'beforeRender',
-			'Controller.beforeRedirect' => array('callable' => 'beforeRedirect', 'passParams' => true),
+			'Controller.beforeRedirect' => array('callable' => 'beforeRedirect'),
 			'Controller.shutdown' => 'afterFilter'
 		);
 	}
@@ -761,7 +761,7 @@ class Controller extends Object implements CakeEventListener {
 		}
 		$event = new CakeEvent('Controller.beforeRedirect', $this, array($url, $status, $exit));
 
-		list($event->break, $event->breakOn, $event->collectReturn) = array(true, false, true);
+		list($event->break, $event->breakOn, $event->collectReturn, $event->passParams) = array(true, false, true, true);
 		$this->getEventManager()->dispatch($event);
 
 		if ($event->isStopped()) {
