@@ -755,7 +755,7 @@ class Model extends Object implements CakeEventListener {
  */
 	public function implementedEvents() {
 		return array(
-			'Model.beforeFind' => array('callable' => 'beforeFind', 'passParams' => true),
+			'Model.beforeFind' => array('callable' => 'beforeFind','passParams' => true),
 			'Model.afterFind' => array('callable' => 'afterFind', 'passParams' => true),
 			'Model.beforeValidate' => array('callable' => 'beforeValidate', 'passParams' => true),
 			'Model.afterValidate' => array('callable' => 'afterValidate'),
@@ -2953,6 +2953,7 @@ class Model extends Object implements CakeEventListener {
 
 		if ($query['callbacks'] === true || $query['callbacks'] === 'before') {
 			$event = new CakeEvent('Model.beforeFind', $this, array($query));
+			$event->passParams = true;
 			list($event->break, $event->breakOn, $event->modParams) = array(true, array(false, null), 0);
 			$this->getEventManager()->dispatch($event);
 

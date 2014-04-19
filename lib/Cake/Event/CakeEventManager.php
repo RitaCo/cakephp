@@ -111,6 +111,7 @@ class CakeEventManager {
 		$this->_listeners[$eventKey][$options['priority']][] = array(
 			'callable' => $callable,
 			'passParams' => $options['passParams'],
+			'global' => $this->_isGlobal
 		);
 	}
 
@@ -238,10 +239,30 @@ class CakeEventManager {
 			if ($event->isStopped()) {
 				break;
 			}
-			if ($listener['passParams'] === true) {
-				$result = call_user_func_array($listener['callable'], $event->data);
+			if($event->passParams) {
+				
+				$type = gettype($listener['callable']);
+				
+				if ( $type !== 'object'  and $listener['callable'][0] instanceof ObjectCollection ) {
+				
+					$result = call_user_func($listener['callable'], $event);
+				} else {
+				
+				
+					l($listener);
+					$params = $event->data;
+					if($listener['global'] === true){
+						 $params[] = $event->subject();
+					}
+					$result = call_user_func_array($listener['callable'], $params);
+				}
+				
 			} else {
+				if ($listener['passParams'] === true) {
+					$result = call_user_func_array($listener['callable'], $event->data);
+				} else {
 				$result = call_user_func($listener['callable'], $event);
+				}
 			}
 			if ($result === false) {
 				$event->stopPropagation();

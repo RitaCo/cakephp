@@ -32,6 +32,8 @@ class CakeEvent {
  */
 	protected $_name = null;
 
+	public $passParams = false;
+
 /**
  * The object this event applies to (usually the same object that generates the event)
  *
