@@ -249,7 +249,7 @@ class CakeEventManager {
 				} else {
 				
 				
-					l($listener);
+
 					$params = $event->data;
 					if($listener['global'] === true){
 						 $params[] = $event->subject();

@@ -755,13 +755,13 @@ class Model extends Object implements CakeEventListener {
  */
 	public function implementedEvents() {
 		return array(
-			'Model.beforeFind' => array('callable' => 'beforeFind','passParams' => true),
-			'Model.afterFind' => array('callable' => 'afterFind', 'passParams' => true),
-			'Model.beforeValidate' => array('callable' => 'beforeValidate', 'passParams' => true),
+			'Model.beforeFind' => array('callable' => 'beforeFind'),
+			'Model.afterFind' => array('callable' => 'afterFind'),
+			'Model.beforeValidate' => array('callable' => 'beforeValidate'),
 			'Model.afterValidate' => array('callable' => 'afterValidate'),
-			'Model.beforeSave' => array('callable' => 'beforeSave', 'passParams' => true),
-			'Model.afterSave' => array('callable' => 'afterSave', 'passParams' => true),
-			'Model.beforeDelete' => array('callable' => 'beforeDelete', 'passParams' => true),
+			'Model.beforeSave' => array('callable' => 'beforeSave'),
+			'Model.afterSave' => array('callable' => 'afterSave'),
+			'Model.beforeDelete' => array('callable' => 'beforeDelete'),
 			'Model.afterDelete' => array('callable' => 'afterDelete'),
 		);
 	}
@@ -1771,7 +1771,7 @@ class Model extends Object implements CakeEventListener {
 
 		if ($options['callbacks'] === true || $options['callbacks'] === 'before') {
 			$event = new CakeEvent('Model.beforeSave', $this, array($options));
-			list($event->break, $event->breakOn) = array(true, array(false, null));
+			list($event->break, $event->breakOn ,$event->passParams) = array(true, array(false, null), true);
 			$this->getEventManager()->dispatch($event);
 			if (!$event->result) {
 				$this->whitelist = $_whitelist;
@@ -1860,6 +1860,7 @@ class Model extends Object implements CakeEventListener {
 
 			if ($options['callbacks'] === true || $options['callbacks'] === 'after') {
 				$event = new CakeEvent('Model.afterSave', $this, array($created, $options));
+				$event->passParams = true;
 				$this->getEventManager()->dispatch($event);
 			}
 
@@ -2559,7 +2560,7 @@ class Model extends Object implements CakeEventListener {
 		$id = $this->id;
 
 		$event = new CakeEvent('Model.beforeDelete', $this, array($cascade));
-		list($event->break, $event->breakOn) = array(true, array(false, null));
+		list($event->break, $event->breakOn, $event->passParams) = array(true, array(false, null), true);
 		$this->getEventManager()->dispatch($event);
 		if ($event->isStopped()) {
 			return false;
@@ -3215,6 +3216,7 @@ class Model extends Object implements CakeEventListener {
 	protected function _filterResults($results, $primary = true) {
 		$event = new CakeEvent('Model.afterFind', $this, array($results, $primary));
 		$event->modParams = 0;
+		$event->passParams = true;
 		$this->getEventManager()->dispatch($event);
 		return $event->result;
 	}
