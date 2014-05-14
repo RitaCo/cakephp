@@ -305,7 +305,7 @@ class ExceptionRenderer {
 		$this->controller->helpers = array('Form', 'Html', 'Session');
 
 		$view = new View($this->controller);
-	//	$view = $this->_getViewObject($this->controller);
+//		$view = $this->_getViewObject($this->controller);
 		$this->controller->response->body($view->render($template, 'error'));
 		$this->controller->response->type('html');
 		$this->controller->response->send();
