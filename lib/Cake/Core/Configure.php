@@ -62,7 +62,7 @@ class Configure {
  * - Include app/Config/bootstrap.php.
  * - Setup error/exception handlers.
  *
- * @param boolean $boot
+ * @param boolean $boot Whether to do bootstrapping.
  * @return void
  */
 	public static function bootstrap($boot = true) {
@@ -116,6 +116,7 @@ class Configure {
 
 /**
  * Set app's default configs
+ *
  * @return void
  */
 	protected static function _appDefaults() {
@@ -146,11 +147,11 @@ class Configure {
  * ));
  * }}}
  *
- * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::write
  * @param string|array $config The key to write, can be a dot notation value.
  * Alternatively can be an array containing key(s) and value(s).
  * @param mixed $value Value to set for var
  * @return boolean True if write was successful
+ * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::write
  */
 	public static function write($config, $value = null) {
 		if (!is_array($config)) {
@@ -181,9 +182,9 @@ class Configure {
  * Configure::read('Name.key'); will return only the value of Configure::Name[key]
  * }}}
  *
- * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::read
  * @param string $var Variable to obtain. Use '.' to access array elements.
  * @return mixed value stored in configure, or null.
+ * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::read
  */
 	public static function read($var = null) {
 		if ($var === null) {
@@ -214,9 +215,9 @@ class Configure {
  * Configure::delete('Name.key'); will delete only the Configure::Name[key]
  * }}}
  *
- * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::delete
  * @param string $var the var to be deleted
  * @return void
+ * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::delete
  */
 	public static function delete($var = null) {
 		self::$_values = Hash::remove(self::$_values, $var);
@@ -243,7 +244,7 @@ class Configure {
 /**
  * Gets the names of the configured reader objects.
  *
- * @param string $name
+ * @param string $name Name to check. If null returns all configured reader names.
  * @return array Array of the configured reader objects.
  */
 	public static function configured($name = null) {
@@ -286,12 +287,12 @@ class Configure {
  * If using `default` config and no reader has been configured for it yet,
  * one will be automatically created using PhpReader
  *
- * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::load
  * @param string $key name of configuration resource to load.
  * @param string $config Name of the configured reader to use to read the resource identified by $key.
  * @param boolean $merge if config files should be merged instead of simply overridden
  * @return boolean False if file not found, true if load successful.
  * @throws ConfigureException Will throw any exceptions the reader raises.
+ * @link http://book.cakephp.org/2.0/en/development/configuration.html#Configure::load
  */
 	public static function load($key, $config = 'default', $merge = true) {
 		$reader = self::_getReader($config);
