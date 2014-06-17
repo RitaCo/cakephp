@@ -88,15 +88,15 @@ class Object {
 		$data = isset($extra['data']) ? $extra['data'] : null;
 		unset($extra['data']);
 
-		if (is_string($url) && strpos($url, Router::fullBaseUrl()) === 0) {
-			$url = Router::normalize(str_replace(Router::fullBaseUrl(), '', $url));
+		if (is_string($url) && strpos($url, RitaRouter::fullBaseUrl()) === 0) {
+			$url = RitaRouter::normalize(str_replace(RitaRouter::fullBaseUrl(), '', $url));
 		}
 		if (is_string($url)) {
 			$request = new CakeRequest($url);
 		} elseif (is_array($url)) {
 			$params = $url + array('pass' => array(), 'named' => array(), 'base' => false);
 			$params = $extra + $params;
-			$request = new CakeRequest(Router::reverse($params));
+			$request = new CakeRequest(RitaRouter::reverse($params));
 		}
 		if (isset($data)) {
 			$request->data = $data;
@@ -104,7 +104,7 @@ class Object {
 
 		$dispatcher = new Dispatcher();
 		$result = $dispatcher->dispatch($request, new CakeResponse(), $extra);
-		Router::popRequest();
+		RitaRouter::popRequest();
 		return $result;
 	}
 
