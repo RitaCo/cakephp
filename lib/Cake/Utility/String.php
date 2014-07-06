@@ -19,7 +19,6 @@
 /**
  * String handling methods.
  *
- *
  * @package       Cake.Utility
  */
 class String {
@@ -323,7 +322,7 @@ class String {
  * - `indentAt` 0 based index to start indenting at. Defaults to 0.
  *
  * @param string $text The text to format.
- * @param array|integer $options Array of options to use, or an integer to wrap the text to.
+ * @param array|int $options Array of options to use, or an integer to wrap the text to.
  * @return string Formatted text.
  */
 	public static function wrap($text, $options = array()) {
@@ -350,9 +349,9 @@ class String {
  * Unicode aware version of wordwrap.
  *
  * @param string $text The text to format.
- * @param integer $width The width to wrap to. Defaults to 72.
+ * @param int $width The width to wrap to. Defaults to 72.
  * @param string $break The line is broken using the optional break parameter. Defaults to '\n'.
- * @param boolean $cut If the cut is set to true, the string is always wrapped at the specified width.
+ * @param bool $cut If the cut is set to true, the string is always wrapped at the specified width.
  * @return string Formatted text.
  */
 	public static function wordWrap($text, $width = 72, $break = "\n", $cut = false) {
@@ -472,7 +471,7 @@ class String {
  * - `exact` If false, $text will not be cut mid-word
  *
  * @param string $text String to truncate.
- * @param integer $length Length of returned string, including ellipsis.
+ * @param int $length Length of returned string, including ellipsis.
  * @param array $options An array of options.
  * @return string Trimmed string.
  */
@@ -513,7 +512,7 @@ class String {
  * - `html` If true, HTML tags would be handled correctly
  *
  * @param string $text String to truncate.
- * @param integer $length Length of returned string, including ellipsis.
+ * @param int $length Length of returned string, including ellipsis.
  * @param array $options An array of html attributes and options.
  * @return string Trimmed string.
  * @link http://book.cakephp.org/2.0/en/core-libraries/helpers/text.html#TextHelper::truncate
@@ -633,7 +632,7 @@ class String {
  *
  * @param string $text String to search the phrase in
  * @param string $phrase Phrase that will be searched for
- * @param integer $radius The amount of characters that will be returned on each side of the founded phrase
+ * @param int $radius The amount of characters that will be returned on each side of the founded phrase
  * @param string $ellipsis Ending that will be appended
  * @return string Modified string
  * @link http://book.cakephp.org/2.0/en/core-libraries/helpers/text.html#TextHelper::excerpt
@@ -672,15 +671,18 @@ class String {
 	}
 
 /**
- * Creates a comma separated list where the last two items are joined with 'and', forming natural English
+ * Creates a comma separated list where the last two items are joined with 'and', forming natural language.
  *
- * @param array $list The list to be joined
- * @param string $and The word used to join the last and second last items together with. Defaults to 'and'
- * @param string $separator The separator used to join all the other items together. Defaults to ', '
+ * @param array $list The list to be joined.
+ * @param string $and The word used to join the last and second last items together with. Defaults to 'and'.
+ * @param string $separator The separator used to join all the other items together. Defaults to ', '.
  * @return string The glued together string.
  * @link http://book.cakephp.org/2.0/en/core-libraries/helpers/text.html#TextHelper::toList
  */
-	public static function toList($list, $and = 'and', $separator = ', ') {
+	public static function toList($list, $and = null, $separator = ', ') {
+		if ($and === null) {
+			$and = __d('cake', 'and');
+		}
 		if (count($list) > 1) {
 			return implode($separator, array_slice($list, null, -1)) . ' ' . $and . ' ' . array_pop($list);
 		}

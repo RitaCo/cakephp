@@ -38,6 +38,7 @@ class Hash {
  * @param string|array $path The path being searched for. Either a dot
  *   separated string, or an array of path segments.
  * @param mixed $default The return value when the path does not exist
+ * @throws InvalidArgumentException
  * @return mixed The value fetched from the array, or null.
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::get
  */
@@ -48,8 +49,16 @@ class Hash {
 		if (is_string($path) || is_numeric($path)) {
 			$parts = explode('.', $path);
 		} else {
+			if (!is_array($path)) {
+				throw new InvalidArgumentException(__d('cake_dev',
+					'Invalid Parameter %s, should be dot separated path or array.',
+					$path
+				));
+			}
+
 			$parts = $path;
 		}
+
 		foreach ($parts as $key) {
 			if (is_array($data) && isset($data[$key])) {
 				$data =& $data[$key];
@@ -57,6 +66,7 @@ class Hash {
 				return $default;
 			}
 		}
+
 		return $data;
 	}
 
@@ -159,7 +169,7 @@ class Hash {
  *
  * @param string $key The key in the array being searched.
  * @param string $token The token being matched.
- * @return boolean
+ * @return bool
  */
 	protected static function _matchToken($key, $token) {
 		if ($token === '{n}') {
@@ -179,7 +189,7 @@ class Hash {
  *
  * @param array $data Array of data to match.
  * @param string $selector The patterns to match.
- * @return boolean Fitness of expression.
+ * @return bool Fitness of expression.
  */
 	protected static function _matches(array $data, $selector) {
 		preg_match_all(
@@ -208,7 +218,10 @@ class Hash {
 			if (isset($data[$attr])) {
 				$prop = $data[$attr];
 			}
-			if ($prop === true || $prop === false) {
+			$isBool = is_bool($prop);
+			if ($isBool && is_numeric($val)) {
+				$prop = $prop ? '1' : '0';
+			} elseif ($isBool) {
 				$prop = $prop ? 'true' : 'false';
 			}
 
@@ -279,7 +292,7 @@ class Hash {
  * @param array $data The data to operate on.
  * @param array $path The path to work on.
  * @param mixed $values The values to insert when doing inserts.
- * @return array $data.
+ * @return array data.
  */
 	protected static function _simpleOp($op, $data, $path, $values = null) {
 		$_list =& $data;
@@ -481,7 +494,7 @@ class Hash {
  *
  * @param array $data The data to search through.
  * @param array $needle The values to file in $data
- * @return boolean true if $data contains $needle, false otherwise
+ * @return bool true if $data contains $needle, false otherwise
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::contains
  */
 	public static function contains(array $data, array $needle) {
@@ -522,7 +535,7 @@ class Hash {
  *
  * @param array $data The data to check.
  * @param string $path The path to check for.
- * @return boolean Existence of path.
+ * @return bool Existence of path.
  * @see Hash::extract()
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::check
  */
@@ -556,7 +569,7 @@ class Hash {
  * Callback function for filtering.
  *
  * @param array $var Array to filter.
- * @return boolean
+ * @return bool
  */
 	protected static function _filter($var) {
 		if ($var === 0 || $var === '0' || !empty($var)) {
@@ -672,7 +685,7 @@ class Hash {
  * Checks to see if all the values in the array are numeric
  *
  * @param array $data The array to check.
- * @return boolean true if values are numeric, false otherwise
+ * @return bool true if values are numeric, false otherwise
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::numeric
  */
 	public static function numeric(array $data) {
@@ -690,7 +703,7 @@ class Hash {
  * to get the dimensions of the array.
  *
  * @param array $data Array to count dimensions on
- * @return integer The number of dimensions in $data
+ * @return int The number of dimensions in $data
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::dimensions
  */
 	public static function dimensions(array $data) {
@@ -715,7 +728,7 @@ class Hash {
  * number of dimensions in a mixed array.
  *
  * @param array $data Array to count dimensions on
- * @return integer The maximum number of dimensions in $data
+ * @return int The maximum number of dimensions in $data
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::maxDimensions
  */
 	public static function maxDimensions(array $data) {
@@ -946,7 +959,7 @@ class Hash {
  * Normalizes an array, and converts it to a standard format.
  *
  * @param array $data List to normalize
- * @param boolean $assoc If true, $data will be converted to an associative array.
+ * @param bool $assoc If true, $data will be converted to an associative array.
  * @return array
  * @link http://book.cakephp.org/2.0/en/core-utility-libraries/hash.html#Hash::normalize
  */
